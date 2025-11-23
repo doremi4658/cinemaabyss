@@ -6,13 +6,22 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "nginx"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
     - host: cinemaabyss.example.com
       http:
         paths:
-          #дополните конфигурацию для /
-          ...
+          # Основной прокси для всех API запросов
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: proxy-service
+                port:
+                  number: 8000
+
+          # Прямой доступ к events-service для тестирования
           - path: /api/events
             pathType: Prefix
             backend:
@@ -20,3 +29,37 @@ spec:
                 name: events-service
                 port:
                   number: 8082
+
+          # Health checks для всех сервисов
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: proxy-service
+                port:
+                  number: 8000
+
+          - path: /api/events/health
+            pathType: Exact
+            backend:
+              service:
+                name: events-service
+                port:
+                  number: 8082
+
+          - path: /api/movies/health
+            pathType: Exact
+            backend:
+              service:
+                name: movies-service
+                port:
+                  number: 8081
+
+          # Fallback на proxy-service для всех остальных запросов
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: proxy-service
+                port:
+                  number: 8000
