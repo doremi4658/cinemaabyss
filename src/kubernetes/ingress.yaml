@@ -63,3 +63,11 @@ spec:
                 name: proxy-service
                 port:
                   number: 8000
+
+          - path: /api/movies
+            pathType: Prefix
+            backend:
+              service:
+                name: movies-service
+                port:
+                    number: 8081
