@@ -4,12 +4,100 @@
 
 1. Спроектируйте to be архитектуру КиноБездны, разделив всю систему на отдельные домены и организовав интеграционное взаимодействие и единую точку вызова сервисов.
 Результат представьте в виде контейнерной диаграммы в нотации С4.
-Добавьте ссылку на файл в этот шаблон
-[ссылка на файл](ссылка)
+Код для https://www.planttext.com/
+
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "Пользователь", "Смотрит фильмы через различные устройства")
+
+System_Boundary(c1, "Онлайн-кинотеатр Кинобездна") {
+    Container(web_app, "Веб-приложение", "JavaScript, React", "Предоставляет веб-интерфейс для ноутбуков и ПК")
+    Container(mobile_app, "Мобильное приложение", "iOS/Android", "Нативное приложение для мобильных устройств")
+    Container(tv_app, "Smart TV приложение", "TV OS", "Приложение для смарт-телевизоров")
+    
+    Container(api_gateway, "API Gateway", "Go", "Единая точка входа, маршрутизация, аутентификация")
+    
+    Container(user_service, "User Service", "Go", "Управление пользователями, аутентификация")
+    Container(subscription_service, "Subscription Service", "Go", "Управление подписками")
+    Container(payment_service, "Payment Service", "Go", "Обработка платежей")
+    Container(metadata_service, "Metadata Service", "Go", "Управление метаданными фильмов (MVP)")
+    Container(content_service, "Content Service", "Go", "Управление видео-контентом и ссылками")
+    Container(discount_service, "Discount Service", "Go", "Управление скидками и промо-акциями")
+    Container(analytics_service, "Analytics Service", "Go, Python", "Сбор и анализ пользовательской активности")
+    
+    ContainerDb(user_db, "User Database", "PostgreSQL", "Хранит данные пользователей")
+    ContainerDb(subscription_db, "Subscription Database", "PostgreSQL", "Хранит данные о подписках")
+    ContainerDb(payment_db, "Payment Database", "PostgreSQL", "Хранит данные о платежах")
+    ContainerDb(metadata_db, "Metadata Database", "PostgreSQL", "Хранит метаданные фильмов")
+    ContainerDb(content_db, "Content Database", "PostgreSQL", "Хранит информацию о видео")
+    ContainerDb(discount_db, "Discount Database", "PostgreSQL", "Хранит данные о скидках")
+    ContainerDb(analytics_db, "Analytics Database", "ClickHouse/PostgreSQL", "Хранит данные для аналитики")
+    
+    Container(kafka, "Apache Kafka", "Kafka", "Шина событий для асинхронной коммуникации")
+    Container(s3_storage, "Object Storage", "Amazon S3/MinIO", "Хранилище для ссылок на стримы, метаданных и статики")
+}
+
+System_Ext(recommendation_system, "External Recommendation System", "Внешняя рекомендательная система")
+System_Ext(payment_system, "Payment Gateways", "Внешние платежные системы")
+System_Ext(loyalty_system, "Loyalty Systems", "Внешние системы лояльности")
+System_Ext(external_streaming, "External Streaming Services", "Сторонние стриминговые сервисы")
+
+' Connections from user to applications
+Rel(user, web_app, "Использует", "HTTPS")
+Rel(user, mobile_app, "Использует", "HTTPS")
+Rel(user, tv_app, "Использует", "HTTPS")
+
+' Connections from applications to API Gateway
+Rel(web_app, api_gateway, "API вызовы", "REST/HTTPS")
+Rel(mobile_app, api_gateway, "API вызовы", "REST/HTTPS")
+Rel(tv_app, api_gateway, "API вызовы", "REST/HTTPS")
+
+' Connections from API Gateway to services
+Rel(api_gateway, user_service, "API вызовы", "REST/HTTPS")
+Rel(api_gateway, subscription_service, "API вызовы", "REST/HTTPS")
+Rel(api_gateway, payment_service, "API вызовы", "REST/HTTPS")
+Rel(api_gateway, metadata_service, "API вызовы", "REST/HTTPS")
+Rel(api_gateway, content_service, "API вызовы", "REST/HTTPS")
+Rel(api_gateway, discount_service, "API вызовы", "REST/HTTPS")
+
+' Database connections
+Rel(user_service, user_db, "Чтение/запись", "SQL")
+Rel(subscription_service, subscription_db, "Чтение/запись", "SQL")
+Rel(payment_service, payment_db, "Чтение/запись", "SQL")
+Rel(metadata_service, metadata_db, "Чтение/запись", "SQL")
+Rel(content_service, content_db, "Чтение/запись", "SQL")
+Rel(discount_service, discount_db, "Чтение/запись", "SQL")
+Rel(analytics_service, analytics_db, "Чтение/запись", "SQL")
+
+' Kafka connections
+Rel(user_service, kafka, "Публикует события пользователей", "Kafka Protocol")
+Rel(metadata_service, kafka, "Публикует события оценок", "Kafka Protocol")
+Rel(content_service, kafka, "Публикует события просмотров", "Kafka Protocol")
+Rel(payment_service, kafka, "Публикует платежные события", "Kafka Protocol")
+Rel(kafka, recommendation_system, "Отправляет события для анализа", "Kafka Protocol")
+Rel(kafka, analytics_service, "Отправляет события для аналитики", "Kafka Protocol")
+
+' External system connections
+Rel(payment_service, payment_system, "Интеграция с платежными шлюзами", "HTTPS")
+Rel(discount_service, loyalty_system, "Интеграция с системами лояльности", "HTTPS")
+
+' S3 Storage connections - ИСПРАВЛЕННЫЕ
+Rel(content_service, s3_storage, "Получает ссылки на стримы", "S3 API")
+Rel(metadata_service, s3_storage, "Хранит постеры, трейлеры", "S3 API")
+Rel(analytics_service, s3_storage, "Хранит отчеты и дампы", "S3 API")
+
+Rel(content_service, external_streaming, "Проверяет доступность контента", "HTTPS/API")
+
+' Content Service предоставляет ссылки клиентам через API Gateway
+Rel(api_gateway, content_service, "Получает стриминговые ссылки", "REST/HTTPS")
+
+@enduml
 
 
 ## Задание 2
-
+ПРОСЬБА!!!
+Попробуйте запустить на своей машине и в случае ошибки подсветить в чем она(((
 ### 1. Proxy
 Команда КиноБездны уже выделила сервис метаданных о фильмах movies и вам необходимо реализовать бесшовный переход с применением паттерна Strangler Fig в части реализации прокси-сервиса (API Gateway), с помощью которого можно будет постепенно переключать траффик, используя фиче-флаг.
 
@@ -274,7 +362,6 @@ cat .docker/config.json | base64
 #### Шаг 3
 Добавьте сюда скриншота вывода при вызове https://cinemaabyss.example.com/api/movies и  скриншот вывода event-service после вызова тестов.
 
-
 ## Задание 4
 Для простоты дальнейшего обновления и развертывания вам как архитектуру необходимо так же реализовать helm-чарты для прокси-сервиса и проверить работу 
 
@@ -348,9 +435,17 @@ minikube tunnel
 Потом вызовите 
 https://cinemaabyss.example.com/api/movies
 и приложите скриншот развертывания helm и вывода https://cinemaabyss.example.com/api/movies
+<img width="1562" height="170" alt="задание 4_2" src="https://github.com/user-attachments/assets/37272069-26ee-4afe-b048-6578185be641" />
+<img width="951" height="369" alt="задание 4_1" src="https://github.com/user-attachments/assets/1a763941-4693-458f-934d-870d787a0662" />
+<img width="1919" height="122" alt="задание 4" src="https://github.com/user-attachments/assets/e08118c1-a936-4bd1-b128-ad13175c064c" />
+<img width="939" height="520" alt="задание 4_3" src="https://github.com/user-attachments/assets/c1725abc-877b-45e1-9664-6fef9ad060e9" />
 
 
 # Задание 5
+<img width="906" height="248" alt="задание 5" src="https://github.com/user-attachments/assets/bcf477b9-8e2d-464f-bd89-bbe86aebdb4a" />
+<img width="1658" height="605" alt="Задание 5_3" src="https://github.com/user-attachments/assets/5c8a93b3-3bfd-42fa-8058-abb064c6b896" />
+<img width="1562" height="152" alt="задание 5_2" src="https://github.com/user-attachments/assets/73d27c91-1b10-461f-a610-a618dcaa033f" />
+
 Компания планирует активно развиваться и для повышения надежности, безопасности, реализации сетевых паттернов типа Circuit Breaker и канареечного деплоя вам как архитектору необходимо развернуть istio и настроить circuit breaker для monolith и movies сервисов.
 
 ```bash
