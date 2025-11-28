@@ -27,7 +27,7 @@ spec:
         - name: dockerconfigjson
       containers:
       - name: proxy-service
-        image: "{{ .Values.eventsService.image.repository }}:{{ .Values.eventsService.image.tag }}"
+        image: "{{ .Values.proxyService.image.repository }}:{{ .Values.proxyService.image.tag }}"
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
