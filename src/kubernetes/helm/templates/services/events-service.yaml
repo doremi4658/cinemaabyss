@@ -27,7 +27,7 @@ spec:
         - name: dockerconfigjson
       containers:
       - name: events-service
-        image: "{{ .Values.eventsService.image | default "ghcr.io/doremi4658/cinemaabyss/events-service:latest" }}"
+        image: "{{ .Values.eventsService.image.repository }}:{{ .Values.eventsService.image.tag }}"
         imagePullPolicy: Always
         ports:
         - containerPort: 8082
