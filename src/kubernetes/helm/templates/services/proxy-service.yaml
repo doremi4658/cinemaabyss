@@ -27,7 +27,7 @@ spec:
         - name: dockerconfigjson
       containers:
       - name: proxy-service
-        image: "{{ .Values.proxyService.image | default "ghcr.io/doremi4658/cinemaabyss/proxy-service:latest" }}"
+        image: "{{ .Values.eventsService.image.repository }}:{{ .Values.eventsService.image.tag }}"
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
