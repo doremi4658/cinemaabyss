@@ -23,25 +23,19 @@ spec:
       labels:
         app: events-service
     spec:
-      imagePullSecrets:
-        - name: dockerconfigjson
       containers:
       - name: events-service
-        image: "{{ .Values.eventsService.image.repository }}:{{ .Values.eventsService.image.tag }}"
-        imagePullPolicy: Always
+        image: {{ .Values.eventsService.image.repository }}:{{ .Values.eventsService.image.tag }}
+        imagePullPolicy: {{ .Values.eventsService.image.pullPolicy }}
         ports:
-        - containerPort: 8082
+        - containerPort: {{ .Values.eventsService.service.targetPort }}
         env:
         - name: PORT
-          value: "8082"
+          value: "{{ .Values.eventsService.service.targetPort }}"
+        - name: DB_CONNECTION_STRING
+          value: "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable"
         - name: KAFKA_BROKERS
-          value: "kafka-0.kafka:9092"
-        - name: KAFKA_TOPIC_MOVIE_EVENTS
-          value: "movie-events"
-        - name: KAFKA_TOPIC_USER_EVENTS
-          value: "user-events"
-        - name: KAFKA_TOPIC_PAYMENT_EVENTS
-          value: "payment-events"
+          value: "kafka:9092"
         envFrom:
         - configMapRef:
             name: cinemaabyss-config
@@ -57,16 +51,18 @@ spec:
         readinessProbe:
           httpGet:
             path: /api/events/health
-            port: 8082
-          initialDelaySeconds: 10
-          periodSeconds: 15
+            port: {{ .Values.eventsService.service.targetPort }}
+          initialDelaySeconds: 5
+          periodSeconds: 10
         livenessProbe:
           httpGet:
             path: /api/events/health
-            port: 8082
-          initialDelaySeconds: 20
-          periodSeconds: 30
+            port: {{ .Values.eventsService.service.targetPort }}
+          initialDelaySeconds: 15
+          periodSeconds: 20
       restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerconfigjson
 ---
 apiVersion: v1
 kind: Service
@@ -79,10 +75,9 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   selector:
-    app: events-service
+      app: events-service
   ports:
-    - port: 8082
-      targetPort: 8082
-      protocol: TCP
-  type: ClusterIP
+    - port: {{ .Values.monolith.service.port }}
+      targetPort: {{ .Values.eventsService.service.targetPort }}
+  type: {{ .Values.eventsService.service.type }}
 {{- end }}
