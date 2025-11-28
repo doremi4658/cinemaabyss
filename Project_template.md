@@ -1,8 +1,5 @@
 ## Изучите [README.md](README.md) файл и структуру проекта.
 
-ПРОСЬБА!!!
-Попробуйте запустить на своей машине и в случае ошибки подсветить в чем она(((
-
 ## Задание 1
 
 1. Спроектируйте to be архитектуру КиноБездны, разделив всю систему на отдельные домены и организовав интеграционное взаимодействие и единую точку вызова сервисов.
@@ -364,12 +361,8 @@ cat .docker/config.json | base64
 
 #### Шаг 3
 Добавьте сюда скриншота вывода при вызове https://cinemaabyss.example.com/api/movies и  скриншот вывода event-service после вызова тестов.
-ПРОСЬБА!!!
-Попробуйте запустить на своей машине и в случае ошибки подсветить в чем она(((
 
 ## Задание 4
-ПРОСЬБА!!!
-Попробуйте запустить на своей машине и в случае ошибки подсветить в чем она(((
 Для простоты дальнейшего обновления и развертывания вам как архитектуру необходимо так же реализовать helm-чарты для прокси-сервиса и проверить работу 
 
 Для этого:
@@ -442,11 +435,17 @@ minikube tunnel
 Потом вызовите 
 https://cinemaabyss.example.com/api/movies
 и приложите скриншот развертывания helm и вывода https://cinemaabyss.example.com/api/movies
+<img width="1562" height="170" alt="задание 4_2" src="https://github.com/user-attachments/assets/37272069-26ee-4afe-b048-6578185be641" />
+<img width="951" height="369" alt="задание 4_1" src="https://github.com/user-attachments/assets/1a763941-4693-458f-934d-870d787a0662" />
+<img width="1919" height="122" alt="задание 4" src="https://github.com/user-attachments/assets/e08118c1-a936-4bd1-b128-ad13175c064c" />
+<img width="939" height="520" alt="задание 4_3" src="https://github.com/user-attachments/assets/c1725abc-877b-45e1-9664-6fef9ad060e9" />
 
 
 # Задание 5
-ПРОСЬБА!!!
-Попробуйте запустить на своей машине и в случае ошибки подсветить в чем она(((
+<img width="906" height="248" alt="задание 5" src="https://github.com/user-attachments/assets/bcf477b9-8e2d-464f-bd89-bbe86aebdb4a" />
+<img width="1658" height="605" alt="Задание 5_3" src="https://github.com/user-attachments/assets/5c8a93b3-3bfd-42fa-8058-abb064c6b896" />
+<img width="1562" height="152" alt="задание 5_2" src="https://github.com/user-attachments/assets/73d27c91-1b10-461f-a610-a618dcaa033f" />
+
 Компания планирует активно развиваться и для повышения надежности, безопасности, реализации сетевых паттернов типа Circuit Breaker и канареечного деплоя вам как архитектору необходимо развернуть istio и настроить circuit breaker для monolith и movies сервисов.
 
 ```bash
