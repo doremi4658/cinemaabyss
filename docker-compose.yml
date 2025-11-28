@@ -65,6 +65,9 @@ services:
       DB_CONNECTION_STRING: postgres://postgres:postgres_password@postgres:5432/cinemaabyss?sslmode=disable
     networks:
       - cinemaabyss-network
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
 
   # Movies Microservice
   movies-service:
@@ -81,6 +84,9 @@ services:
       DB_CONNECTION_STRING: postgres://postgres:postgres_password@postgres:5432/cinemaabyss?sslmode=disable
     networks:
       - cinemaabyss-network
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
 
   #Events Microservice with kafka
   events-service:
